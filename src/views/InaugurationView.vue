@@ -147,7 +147,27 @@
 
       </div>
 
-      <CinematicInauguration v-else :qr-url="inaugurationUrl" />
+      <div v-else class="w-full max-w-xl bg-neutral-950/90 border border-emerald-700/70 p-6 sm:p-8 rounded-xl shadow-[0_0_50px_rgba(16,185,129,0.35)] backdrop-blur-xl space-y-5 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-950/70 border border-emerald-600/60 rounded text-[11px] font-bold text-emerald-300 tracking-widest uppercase">
+          <ShieldAlert class="w-3.5 h-3.5" />
+          <span>COMMAND DISPATCHED</span>
+        </div>
+
+        <h2 class="font-orbitron text-2xl sm:text-3xl font-black tracking-wider text-white uppercase">
+          MAIN DISPLAY TRIGGERED
+        </h2>
+
+        <p class="text-xs sm:text-sm text-emerald-200/90 tracking-wide uppercase">
+          PLAY_VIDEO SENT. THE CEREMONY VIDEO WILL START ON THE MAIN DISPLAY AT /
+        </p>
+
+        <router-link
+          to="/"
+          class="inline-flex items-center justify-center px-5 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-gray-200 rounded text-xs font-bold tracking-wider uppercase transition-colors"
+        >
+          RETURN TO LANDING PAGE
+        </router-link>
+      </div>
 
     </main>
 
@@ -163,18 +183,11 @@
 import { computed, ref } from 'vue';
 import { Lock, Key, AlertTriangle, ShieldAlert, RefreshCw } from 'lucide-vue-next';
 import LetterGlitch from '../components/LetterGlitch.vue';
-import CinematicInauguration from '../components/CinematicInauguration.vue';
 import { cyberAudio } from '../utils/cyberAudio';
 import { useWebSocket } from '../utils/useWebSocket';
 
 // VALID AUTHORIZATION CIPHER (Supports CYBER-CELL-2026, MBC-2026, INAUGURATE-2026)
 const VALID_CIPHERS = ['CYBER-CELL-2026', 'MBC-2026', 'INAUGURATE-2026'];
-
-const INAUGURATION_URL = typeof window !== 'undefined'
-  ? `${window.location.origin}/inaugurate`
-  : 'https://mbccyber.com/inaugurate';
-
-const inaugurationUrl = ref(INAUGURATION_URL);
 const cipherInput = ref('');
 const isVerifying = ref(false);
 const isAuthorized = ref(false);
