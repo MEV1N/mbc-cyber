@@ -1,10 +1,22 @@
+import http from 'node:http';
 import { WebSocket, WebSocketServer } from 'ws';
 
 const port = Number(process.env.PORT || process.env.WS_PORT || 8080);
 
-const server = new WebSocketServer({ port });
+const httpServer = http.createServer((req, res) => {
+  if (req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, service: 'mbc-websocket' }));
+    return;
+  }
 
-server.on('connection', (socket) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('MBC WebSocket server is running');
+});
+
+const wsServer = new WebSocketServer({ server: httpServer });
+
+wsServer.on('connection', (socket) => {
   console.log('WebSocket client connected');
 
   socket.on('message', (rawMessage) => {
@@ -25,7 +37,7 @@ server.on('connection', (socket) => {
       type: 'PLAY_VIDEO'
     });
 
-    for (const client of server.clients) {
+    for (const client of wsServer.clients) {
       if (
         client !== socket &&
         client.readyState === WebSocket.OPEN
@@ -40,4 +52,7 @@ server.on('connection', (socket) => {
   });
 });
 
-console.log(`WebSocket server listening on port ${port}`);
+httpServer.listen(port, () => {
+  console.log(`WebSocket server listening on port ${port}`);
+  console.log(`Health endpoint: http://localhost:${port}/health`);
+});

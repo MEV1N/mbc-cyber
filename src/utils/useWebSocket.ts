@@ -8,11 +8,23 @@ export type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'err
 
 type MessageHandler = (message: WebSocketMessage) => void;
 
+const normalizeWebSocketUrl = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+
+  if (/^https:\/\//i.test(trimmed)) return trimmed.replace(/^https:\/\//i, 'wss://');
+  if (/^http:\/\//i.test(trimmed)) return trimmed.replace(/^http:\/\//i, 'ws://');
+
+  // Accept hostnames entered without scheme in env vars.
+  if (/^wss?:\/\//i.test(trimmed)) return trimmed;
+  return `wss://${trimmed.replace(/^\/+/, '')}`;
+};
+
 const getWebSocketUrl = () => {
   const configuredUrl = import.meta.env.VITE_WS_URL?.trim();
   const legacyConfiguredUrl = import.meta.env.VITE_WEBSOCKET_URL?.trim();
-  if (configuredUrl) return configuredUrl;
-  if (legacyConfiguredUrl) return legacyConfiguredUrl;
+  if (configuredUrl) return normalizeWebSocketUrl(configuredUrl);
+  if (legacyConfiguredUrl) return normalizeWebSocketUrl(legacyConfiguredUrl);
   if (import.meta.env.DEV) return 'ws://localhost:8080';
   return '';
 };
