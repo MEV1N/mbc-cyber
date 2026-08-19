@@ -188,6 +188,21 @@ The project uses Vue Router history mode. The `public/_redirects` file contains:
 
 This rewrite is needed on Netlify-style hosting so that direct requests to `/inaugurate` resolve to the Vue application. Equivalent fallback configuration is required when deploying to another host.
 
+For Vercel, add `vercel.json` at the project root:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
+Without this rewrite, direct requests to routes like `/inauguration` or `/inaugurate` will return 404 because Vercel looks for a physical file at that path.
+
 The WebSocket server is a separate persistent Node.js process. Deploy `server/websocket.js` to a WebSocket-capable host, set `WS_PORT` if the host provides a port, and run:
 
 ```bash
