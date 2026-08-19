@@ -108,7 +108,7 @@
           <!-- PRIMARY INAUGURATE BUTTON -->
           <button
             type="submit"
-            :disabled="isVerifying || !cipherInput.trim() || !isWebSocketReady"
+            :disabled="isVerifying || !cipherInput.trim()"
             class="w-full py-4 bg-gradient-to-r from-red-700 via-red-600 to-red-800 hover:from-red-600 hover:to-red-700 disabled:opacity-50 text-white font-orbitron text-base font-black tracking-[0.2em] uppercase rounded shadow-[0_0_25px_rgba(255,0,50,0.6)] transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-3"
           >
             <ShieldAlert class="w-5 h-5" />
@@ -174,6 +174,24 @@
 
     </main>
 
+    <div v-show="isRickPlaying" class="fixed inset-0 z-40 bg-black">
+      <video
+        ref="rickVideoRef"
+        class="h-full w-full object-contain"
+        src="/rick.mp4"
+        playsinline
+        controls
+        @ended="closeRickVideo"
+      />
+      <button
+        type="button"
+        class="absolute right-4 top-4 border border-red-700 bg-black/85 px-3 py-1 text-xs font-bold tracking-wider text-red-300"
+        @click="closeRickVideo"
+      >
+        CLOSE
+      </button>
+    </div>
+
     <!-- Footer System Info -->
     <footer class="relative z-10 w-full px-6 py-3 border-t border-neutral-900 bg-black/90 text-center text-[11px] text-gray-600 font-mono">
       SYSTEM GATEWAY v4.0.9 // QUANTUM ENCRYPTION AES-256
@@ -183,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import { Lock, Key, AlertTriangle, ShieldAlert, RefreshCw } from 'lucide-vue-next';
 import LetterGlitch from '../components/LetterGlitch.vue';
 import { cyberAudio } from '../utils/cyberAudio';
@@ -200,6 +218,8 @@ const statusText = ref('VERIFYING AUTHORIZATION...');
 const generatedPublicCipher = ref('');
 const copied = ref(false);
 const isCommandSent = ref(false);
+const isRickPlaying = ref(false);
+const rickVideoRef = ref<HTMLVideoElement | null>(null);
 
 const { status: webSocketStatus, url: activeWsUrl, send } = useWebSocket(() => undefined);
 const isWebSocketReady = computed(() => webSocketStatus.value === 'connected');
@@ -219,7 +239,38 @@ const connectionHint = computed(() => {
   return 'DISPLAY LINK READY.';
 });
 
-const handleAuthenticate = () => {
+const playRickOnPhone = async () => {
+  isRickPlaying.value = true;
+  await nextTick();
+  const video = rickVideoRef.value;
+  if (!video) return;
+  video.currentTime = 0;
+  video.play().catch(() => {
+    // Keep controls visible so user can start playback manually if autoplay is blocked.
+  });
+};
+
+const closeRickVideo = () => {
+  const video = rickVideoRef.value;
+  if (video) {
+    video.pause();
+    video.currentTime = 0;
+  }
+  isRickPlaying.value = false;
+};
+
+const sendPlayVideoWithRetry = async () => {
+  const attempts = 8;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (send({ type: 'PLAY_VIDEO' })) return true;
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  }
+
+  return false;
+};
+
+const handleAuthenticate = async () => {
   isError.value = false;
   const inputNormalized = cipherInput.value.trim().toUpperCase();
 
@@ -228,11 +279,12 @@ const handleAuthenticate = () => {
     // TRIGGER CINEMATIC FAILURE
     cyberAudio.playAccessDenied();
     isError.value = true;
+    playRickOnPhone();
     return;
   }
 
   // VALID CIPHER FLOW
-  if (!send({ type: 'PLAY_VIDEO' })) {
+  if (!(await sendPlayVideoWithRetry())) {
     isError.value = true;
     statusText.value = 'DISPLAY CONNECTION UNAVAILABLE';
     return;

@@ -132,6 +132,12 @@ const enableCeremony = () => {
   playbackNotice.value = '';
   const video = videoRef.value;
   if (!video) return;
+
+  if (isCinematicPlaying.value && !video.paused) {
+    video.muted = false;
+    return;
+  }
+
   video.muted = true;
   video.play().then(() => {
     video.pause();
@@ -143,16 +149,23 @@ const enableCeremony = () => {
 };
 
 const handlePlayVideo = async () => {
-  if (!isDisplayEnabled.value) {
-    playbackNotice.value = 'CLICK ENABLE CEREMONY ON THE MAIN DISPLAY FIRST';
-    return;
-  }
-
   isCinematicPlaying.value = true;
   await nextTick();
   const video = videoRef.value;
   if (!video) return;
   video.currentTime = 0;
+
+  if (!isDisplayEnabled.value) {
+    video.muted = true;
+    video.play().then(() => {
+      playbackNotice.value = 'CEREMONY STARTED MUTED. CLICK ENABLE CEREMONY TO UNMUTE.';
+    }).catch(() => {
+      playbackNotice.value = 'VIDEO PLAYBACK BLOCKED: CLICK ENABLE CEREMONY ON THE MAIN DISPLAY';
+    });
+    return;
+  }
+
+  video.muted = false;
   video.play().catch(() => {
     playbackNotice.value = 'VIDEO PLAYBACK BLOCKED: ENABLE CEREMONY ON THE MAIN DISPLAY';
   });

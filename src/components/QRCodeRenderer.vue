@@ -4,7 +4,7 @@
     <!-- Raw QR.png Display with exact torn paper edges (No containers, borders, or canvas fallback) -->
     <div class="relative flex items-center justify-center">
       <img 
-        :src="imageSrc || qrPng" 
+        :src="imageSrc" 
         alt="Scannable QR Code" 
         class="w-72 h-72 sm:w-96 sm:h-96 block object-contain"
       />
@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import qrPng from '../assets/QR.png';
+const defaultQrImage = '/QR2.png';
 
 withDefaults(defineProps<{
   value?: string;
@@ -27,6 +27,7 @@ withDefaults(defineProps<{
   label?: string;
   isScanning?: boolean;
 }>(), {
+  imageSrc: defaultQrImage,
   label: '',
   isScanning: false
 });
