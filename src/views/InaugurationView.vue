@@ -108,12 +108,15 @@
           <!-- PRIMARY INAUGURATE BUTTON -->
           <button
             type="submit"
-            :disabled="isVerifying || !cipherInput.trim()"
+            :disabled="isVerifying || !cipherInput.trim() || !isWebSocketReady"
             class="w-full py-4 bg-gradient-to-r from-red-700 via-red-600 to-red-800 hover:from-red-600 hover:to-red-700 disabled:opacity-50 text-white font-orbitron text-base font-black tracking-[0.2em] uppercase rounded shadow-[0_0_25px_rgba(255,0,50,0.6)] transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-3"
           >
             <ShieldAlert class="w-5 h-5" />
             <span>{{ isCommandSent ? 'AUTHORIZATION SENT' : 'INAUGURATE' }}</span>
           </button>
+          <div v-if="!isWebSocketReady" class="text-center text-[11px] text-amber-300 uppercase tracking-wider">
+            DISPLAY LINK OFFLINE. CONNECT WEBSOCKET BACKEND TO ENABLE INAUGURATION.
+          </div>
         </form>
 
         <!-- PUBLIC GENERATOR SECTION (Intentionally NOT Valid) -->
@@ -157,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Lock, Key, AlertTriangle, ShieldAlert, RefreshCw } from 'lucide-vue-next';
 import LetterGlitch from '../components/LetterGlitch.vue';
 import CinematicInauguration from '../components/CinematicInauguration.vue';
@@ -183,6 +186,7 @@ const copied = ref(false);
 const isCommandSent = ref(false);
 
 const { status: webSocketStatus, send } = useWebSocket(() => undefined);
+const isWebSocketReady = computed(() => webSocketStatus.value === 'connected');
 
 const handleAuthenticate = () => {
   isError.value = false;

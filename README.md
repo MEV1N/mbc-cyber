@@ -143,6 +143,8 @@ VITE_WS_URL=wss://your-websocket-server-domain.com
 
 The browser uses the development fallback `ws://localhost:8080` only when running Vite in development mode. Production builds require `VITE_WS_URL`; they do not connect to localhost automatically.
 
+If the top-right status shows `DISPLAY: unavailable` on `/` or `/inaugurate`, the frontend is not connected to any WebSocket backend and cross-device `PLAY_VIDEO` will not work.
+
 ### Replace the QR artwork
 
 Replace the following assets while preserving their filenames, or update the imports in `QRCodeRenderer.vue` and `CinematicInauguration.vue`:
@@ -214,6 +216,14 @@ Configure the frontend build environment as follows, then rebuild and deploy the
 ```bash
 VITE_WS_URL=wss://your-websocket-server-domain.com
 ```
+
+For Vercel deployments, add `VITE_WS_URL` in Project Settings -> Environment Variables, then redeploy. Example:
+
+```text
+VITE_WS_URL=wss://mbc-cyber-ws.yourdomain.com
+```
+
+Both devices must connect to this same WebSocket server for the phone's `INAUGURATE` action to trigger video playback on the main display.
 
 Use `wss://` whenever the frontend is served over HTTPS. Do not deploy this server as a serverless function that cannot keep persistent WebSocket connections open.
 
