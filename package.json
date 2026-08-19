@@ -1,0 +1,33 @@
+{
+  "name": "mbccyber",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "ws": "node server/websocket.js",
+    "dev:all": "concurrently \"npm run dev\" \"npm run ws\"",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.31.0",
+    "lucide-vue-next": "^1.0.0",
+    "qrcode": "^1.5.4",
+    "vue": "^3.5.40",
+    "vue-router": "^4.6.4",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.13.3",
+    "@types/qrcode": "^1.5.6",
+    "concurrently": "^9.2.1",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/tsconfig": "^0.9.1",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0",
+    "vue-tsc": "^3.3.8"
+  }
+}
