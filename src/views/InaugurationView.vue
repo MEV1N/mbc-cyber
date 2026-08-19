@@ -114,8 +114,11 @@
             <ShieldAlert class="w-5 h-5" />
             <span>{{ isCommandSent ? 'AUTHORIZATION SENT' : 'INAUGURATE' }}</span>
           </button>
-          <div v-if="!isWebSocketReady" class="text-center text-[11px] text-amber-300 uppercase tracking-wider">
-            DISPLAY LINK OFFLINE. CONNECT WEBSOCKET BACKEND TO ENABLE INAUGURATION.
+          <div v-if="!isWebSocketReady" class="space-y-1 text-center text-[11px] text-amber-300 uppercase tracking-wider">
+            <div>{{ connectionHint }}</div>
+            <div class="text-[10px] text-amber-400/80 normal-case tracking-normal break-all">
+              Active WS URL: {{ activeWsUrl || 'NOT CONFIGURED (set VITE_WS_URL in frontend build env)' }}
+            </div>
           </div>
         </form>
 
@@ -198,8 +201,23 @@ const generatedPublicCipher = ref('');
 const copied = ref(false);
 const isCommandSent = ref(false);
 
-const { status: webSocketStatus, send } = useWebSocket(() => undefined);
+const { status: webSocketStatus, url: activeWsUrl, send } = useWebSocket(() => undefined);
 const isWebSocketReady = computed(() => webSocketStatus.value === 'connected');
+const connectionHint = computed(() => {
+  if (webSocketStatus.value === 'unavailable') {
+    return 'DISPLAY LINK OFFLINE. FRONTEND WEBSOCKET URL IS NOT CONFIGURED.';
+  }
+
+  if (webSocketStatus.value === 'connecting') {
+    return 'CONNECTING TO CEREMONY DISPLAY CHANNEL...';
+  }
+
+  if (webSocketStatus.value === 'error' || webSocketStatus.value === 'disconnected') {
+    return 'DISPLAY LINK OFFLINE. WEBSOCKET SERVER IS UNREACHABLE.';
+  }
+
+  return 'DISPLAY LINK READY.';
+});
 
 const handleAuthenticate = () => {
   isError.value = false;

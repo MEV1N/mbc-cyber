@@ -10,7 +10,9 @@ type MessageHandler = (message: WebSocketMessage) => void;
 
 const getWebSocketUrl = () => {
   const configuredUrl = import.meta.env.VITE_WS_URL?.trim();
+  const legacyConfiguredUrl = import.meta.env.VITE_WEBSOCKET_URL?.trim();
   if (configuredUrl) return configuredUrl;
+  if (legacyConfiguredUrl) return legacyConfiguredUrl;
   if (import.meta.env.DEV) return 'ws://localhost:8080';
   return '';
 };
@@ -22,6 +24,7 @@ const isSupportedMessage = (value: unknown): value is WebSocketMessage => {
 
 export const useWebSocket = (onMessage: MessageHandler) => {
   const status = ref<WebSocketStatus>('disconnected');
+  const resolvedUrl = ref('');
   const socket = ref<WebSocket | null>(null);
   let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
   let isUnmounted = false;
@@ -29,14 +32,16 @@ export const useWebSocket = (onMessage: MessageHandler) => {
   const connect = () => {
     if (isUnmounted) return;
 
-    const url = getWebSocketUrl();
-    if (!url) {
+    const nextUrl = getWebSocketUrl();
+    if (!nextUrl) {
       status.value = 'unavailable';
       return;
     }
 
+    resolvedUrl.value = nextUrl;
+
     status.value = 'connecting';
-    const nextSocket = new WebSocket(url);
+    const nextSocket = new WebSocket(nextUrl);
     socket.value = nextSocket;
 
     nextSocket.addEventListener('open', () => {
@@ -80,5 +85,5 @@ export const useWebSocket = (onMessage: MessageHandler) => {
   onMounted(connect);
   onBeforeUnmount(disconnect);
 
-  return { status, send };
+  return { status, url: resolvedUrl, send };
 };
